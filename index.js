@@ -15,12 +15,25 @@ const server = http.createServer(app);
 const io = new Server(server);
 
 io.on('connection', (socket) => {
-    console.log('a user connected');
+    console.log('A user connected');
 
-    socket.on('message', (message) => {
-        console.log(message);
-        io.emit('message', message);
-    })
+    // Handle joining a room
+    socket.on('joinRoom', (room) => {
+        socket.join(room);
+        console.log(`User joined room: ${room}`);
+        socket.to(room).emit('message', `A new user has joined the room: ${room}`);
+    });
+
+    // Handle sending messages to a room
+    socket.on('message', ({ room, message }) => {
+        console.log(`Message to room ${room}: ${message}`);
+        socket.to(room).emit('message', message);
+    });
+
+    // Handle disconnect
+    socket.on('disconnect', () => {
+        console.log('A user disconnected');
+    });
 });
 
 server.listen(3000, () => {
